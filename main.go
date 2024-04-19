@@ -4,6 +4,10 @@ import (
   "fmt"
   "math/rand"
   "time"
+  "bufio"
+  "os"
+  "io"
+  "strings"
 )
 
 const (
@@ -17,6 +21,7 @@ var (
   ranks = []string{"2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"}
   suites = []string{clubs, diamonds, hearts, spades}
 
+  // r = rand.New(rand.NewSource(99)) // For testing purposes
   r = rand.New(rand.NewSource(time.Now().UnixNano()))
 )
 
@@ -61,26 +66,69 @@ func dealNewHandRecur(deck []card, hand []card) ([]card, []card) {
   }
 }
 
-func main() {
-  // r := rand.New(rand.NewSource(99)) // For testing purposes
+func readUserInput() (string, error) {
 
+    reader := bufio.NewReader(os.Stdin)
+
+    line, err := reader.ReadString('\n')
+
+    if err != nil {
+      return "", err
+    }
+
+    cmd := strings.TrimSpace(line)
+    return cmd, nil
+}
+
+func printHand(hand []card) {
+  fmt.Printf("Hand is ( ")
+
+  for i, card := range hand {
+    fmt.Printf("(%d: %s) ", i+1, card.toString())
+  }
+
+  fmt.Printf(")\n")
+}
+
+func printDeckCardNumber(deck []card) {
+  fmt.Printf("Deck has %d cards!\n", len(deck))
+}
+
+func main() {
   deck := initializeDeck()
 
   // for _, card := range deck {
   //   fmt.Printf("%s\n", card.toString())
   // }
 
-  fmt.Printf("Deck has %d cards!\n", len(deck))
+  printDeckCardNumber(deck)
 
   hand, deck := dealNewHand(deck)
 
-  fmt.Printf("Random hand is ( ")
+  printHand(hand)
 
-  for i, card := range hand {
-    fmt.Printf("%d:%s, ", i, card.toString())
+  printDeckCardNumber(deck)
+
+  for {
+    fmt.Printf("> ")
+    cmd, err := readUserInput()
+
+    if err != nil {
+      if err == io.EOF {
+        fmt.Println("Bye!")
+        os.Exit(0)
+      }
+    }
+
+    switch cmd {
+    case "1", "2", "3", "4", "5":
+      fmt.Printf("Hold card #%s\n", cmd)
+    case "D":
+      fmt.Printf("Deal new hand\n")
+    default:
+      fmt.Printf("Unknown command? Try again.\n")
+      continue
+    }
   }
-
-  fmt.Printf(")\n")
-  fmt.Printf("Deck has %d cards!\n", len(deck))
 }
 
