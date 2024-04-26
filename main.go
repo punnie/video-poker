@@ -8,6 +8,7 @@ import (
   "os"
   "io"
   "strings"
+  "strconv"
 )
 
 const (
@@ -47,9 +48,9 @@ func initializeDeck() []card {
 }
 
 func removeCardFromDeck(deck []card, index int) (card, []card) {
-    ret := make([]card, 0)
-    ret = append(ret, deck[:index]...)
-    return deck[index], append(ret, deck[index+1:]...)
+  ret := make([]card, 0)
+  ret = append(ret, deck[:index]...)
+  return deck[index], append(ret, deck[index+1:]...)
 }
 
 func dealNewHand(deck []card) ([]card, []card) {
@@ -70,23 +71,35 @@ func dealNewHandRecur(deck []card, hand []card) ([]card, []card) {
 
 func readUserInput() (string, error) {
 
-    reader := bufio.NewReader(os.Stdin)
+  reader := bufio.NewReader(os.Stdin)
 
-    line, err := reader.ReadString('\n')
+  line, err := reader.ReadString('\n')
 
-    if err != nil {
-      return "", err
+  if err != nil {
+    if err == io.EOF {
+      fmt.Println("Bye!")
+      os.Exit(0)
     }
+  }
 
-    cmd := strings.TrimSpace(line)
-    return cmd, nil
+  cmd := strings.TrimSpace(line)
+
+  return cmd, nil
 }
 
-func printHand(hand []card) {
+func printHand(hand []card, hold []bool) {
   fmt.Printf("Hand is ( ")
 
   for i, card := range hand {
-    fmt.Printf("[%d: %s] ", i+1, card.toString())
+    var hold_s string
+
+    if hold[i] {
+      hold_s = "H"
+    } else {
+      hold_s = " "
+    }
+
+    fmt.Printf("[%d: %s [%s]] ", i+1, card.toString(), hold_s)
   }
 
   fmt.Printf(")\n")
@@ -96,44 +109,73 @@ func printDeckCardNumber(deck []card) {
   fmt.Printf("Deck has %d cards!\n", len(deck))
 }
 
+type prize struct {
+  hand int
+}
+
+func (p prize) toString() string {
+  return [...]string{"NONE", "JACKS", "TWO PAIR", "THREE OF A KIND", "STRAIGHT", "FLUSH", "FULL HOUSE", "FOUR OF A KIND", "STRAIGHT FLUSH", "ROYAL FLUSH"}[p.hand]
+}
+
+func detectPrize(hand []card) prize {
+
+
+  return prize{hand: 0}
+}
+
 func main() {
-  var hand []card
-
-  deck := initializeDeck()
-
-  // for _, card := range deck {
-  //   fmt.Printf("%s\n", card.toString())
-  // }
-
-  printDeckCardNumber(deck)
-
-  for i := 0; i < 10; i++ {
-    hand, deck = dealNewHand(deck)
-    printHand(hand)
-  }
-
-  printDeckCardNumber(deck)
-
   for {
-    fmt.Printf("> ")
-    cmd, err := readUserInput()
+    var hand []card
+    hold := []bool{false, false, false, false, false}
 
-    if err != nil {
-      if err == io.EOF {
-        fmt.Println("Bye!")
-        os.Exit(0)
+    deck := initializeDeck()
+    hand, deck = dealNewHand(deck)
+
+    deal_loop := true
+
+    for deal_loop {
+      printHand(hand, hold)
+      fmt.Printf("[1..5]: Hold card  [RETURN]: Deal new hand\n")
+
+      fmt.Printf("> ")
+      cmd, _ := readUserInput()
+
+      switch cmd {
+      case "1", "2", "3", "4", "5":
+        cmd_i, err := strconv.Atoi(cmd)
+
+        if err != nil {
+          panic(err)
+        }
+
+        hold[cmd_i - 1] = !hold[cmd_i - 1]
+
+      case "":
+
+        deal_loop = false
+
+        for i := 0; i < 5; i++ {
+          if hold[i] {
+            continue
+          } else {
+            hand[i], deck = removeCardFromDeck(deck, r.Intn(len(deck)))
+            hold[i] = false
+          } 
+        }
+
+        p := detectPrize(hand)
+
+        printHand(hand, hold)
+        fmt.Printf("Prize: %s\n", p.toString())
+
+      default:
+        fmt.Printf("?\n")
+        continue
       }
     }
 
-    switch cmd {
-    case "1", "2", "3", "4", "5":
-      fmt.Printf("Hold card #%s\n", cmd)
-    case "D":
-      fmt.Printf("Deal new hand\n")
-    default:
-      fmt.Printf("Unknown command? Try again.\n")
-      continue
-    }
+    fmt.Printf("\n")
+    _, _ = readUserInput()
   }
 }
 
