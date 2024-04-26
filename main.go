@@ -18,7 +18,7 @@ const (
 )
 
 var (
-  ranks = []string{"2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"}
+  ranks = []string{"2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"}
   suites = []string{clubs, diamonds, hearts, spades}
 
   // r = rand.New(rand.NewSource(99)) // For testing purposes
@@ -31,7 +31,7 @@ type card struct {
 }
 
 func (c card) toString() string {
-  return fmt.Sprintf("%s%s", c.suite, c.rank)
+  return fmt.Sprintf("%s%s", c.rank, c.suite)
 }
 
 func initializeDeck() []card {
@@ -84,7 +84,7 @@ func printHand(hand []card) {
   fmt.Printf("Hand is ( ")
 
   for i, card := range hand {
-    fmt.Printf("(%d: %s) ", i+1, card.toString())
+    fmt.Printf("[%d: %s] ", i+1, card.toString())
   }
 
   fmt.Printf(")\n")
