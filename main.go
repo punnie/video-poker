@@ -47,7 +47,9 @@ func initializeDeck() []card {
 }
 
 func removeCardFromDeck(deck []card, index int) (card, []card) {
-  return deck[index], append(deck[:index], deck[index+1:]...)
+    ret := make([]card, 0)
+    ret = append(ret, deck[:index]...)
+    return deck[index], append(ret, deck[index+1:]...)
 }
 
 func dealNewHand(deck []card) ([]card, []card) {
@@ -95,6 +97,8 @@ func printDeckCardNumber(deck []card) {
 }
 
 func main() {
+  var hand []card
+
   deck := initializeDeck()
 
   // for _, card := range deck {
@@ -103,9 +107,10 @@ func main() {
 
   printDeckCardNumber(deck)
 
-  hand, deck := dealNewHand(deck)
-
-  printHand(hand)
+  for i := 0; i < 10; i++ {
+    hand, deck = dealNewHand(deck)
+    printHand(hand)
+  }
 
   printDeckCardNumber(deck)
 
