@@ -30,7 +30,7 @@ var (
 
 type card struct {
   rank string
-  rank_value int
+  rank_i int
   suite string
 }
 
@@ -43,7 +43,7 @@ func initializeDeck() []card {
 
   for _, suite := range suites {
     for i, rank := range ranks {
-      deck = append(deck, card{rank: rank, rank_value: i, suite: suite})
+      deck = append(deck, card{rank: rank, rank_i: i, suite: suite})
     }
   }
 
@@ -127,7 +127,7 @@ func detectPrize(h []card) prize {
   copy(hand, h)
 
   cardCmp := func(a, b card) int {
-    return cmp.Compare(a.rank_value, b.rank_value)
+    return cmp.Compare(a.rank_i, b.rank_i)
   }
 
   slices.SortFunc(hand, cardCmp)
@@ -159,7 +159,7 @@ func detectPrize(h []card) prize {
 
   // Check for straight
   for i := 0; i < len(hand) - 1; i++ {
-    if hand[i + 1].rank_value != hand[i].rank_value + 1 {
+    if hand[i + 1].rank_i != hand[i].rank_i + 1 {
       is_straight = false
     }
   }
@@ -168,7 +168,7 @@ func detectPrize(h []card) prize {
   if len(suites) == 1 {
     if is_straight {
       // Royal straight flush
-      if hand[len(hand) - 1].rank_value == 12 {
+      if hand[len(hand) - 1].rank_i == 12 {
         return prize{hand: 9}
       }
 
@@ -237,7 +237,7 @@ func main() {
 
     for deal_loop {
       printHand(hand, hold)
-      fmt.Printf("[1..5]: Hold card  [RETURN]: Deal new hand\n")
+      // fmt.Printf("[1..5]: Hold card  [RETURN]: Deal new hand\n")
 
       fmt.Printf("> ")
       cmd, _ := readUserInput()
@@ -271,13 +271,13 @@ func main() {
         fmt.Printf("Prize: %s\n", p.toString())
 
       default:
-        fmt.Printf("?\n")
+        // fmt.Printf("?\n")
         continue
       }
     }
 
-    fmt.Printf("\n")
-    _, _ = readUserInput()
+    // fmt.Printf("\n")
+    // _, _ = readUserInput()
   }
 }
 
