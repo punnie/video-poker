@@ -70,7 +70,6 @@ func dealNewHandRecur(deck []card, hand []card) ([]card, []card) {
 }
 
 func readUserInput() (string, error) {
-
   reader := bufio.NewReader(os.Stdin)
 
   line, err := reader.ReadString('\n')
@@ -118,7 +117,56 @@ func (p prize) toString() string {
 }
 
 func detectPrize(hand []card) prize {
+  ranks := map[string]int{}
+  suites := map[string]int{}
 
+  for _, card := range hand {
+    _, rank_is_present := ranks[card.rank]
+    if  rank_is_present {
+      ranks[card.rank]++ 
+    } else {
+      ranks[card.rank] = 1
+    }
+
+    _, suite_is_present := suites[card.suite]
+    if  suite_is_present {
+      suites[card.suite]++ 
+    } else {
+      suites[card.suite] = 1
+    }
+  }
+
+  fmt.Println("Ranks: ", ranks)
+  fmt.Println("Ranks length: ", len(ranks))
+  fmt.Println("Suites: ", suites)
+  fmt.Println("Suites length: ", len(suites))
+
+  // We got ourselves some type of flush
+  if len(suites) == 1 {
+    return prize{hand: 5}
+  }
+
+  // We either got four of a kind or a full house
+  if len(ranks) == 2 {
+    for _, v := range ranks {
+      if v == 4 {
+        return prize{hand: 7}
+      }
+    }
+
+    return prize{hand: 6}
+  }
+
+  // We likely have a three of a kind or two pair
+  if len(ranks) == 3 {
+    for _, v := range ranks {
+      if v == 3 {
+        return prize{hand: 3}
+      }
+    }
+
+    return prize{hand: 2}
+  }
 
   return prize{hand: 0}
 }
