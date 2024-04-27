@@ -26,6 +26,9 @@
             gopls
             semgrep
 
+            # Copilot
+            nodejs
+
             llm
           ];
         };
