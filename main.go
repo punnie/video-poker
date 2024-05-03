@@ -15,18 +15,27 @@ import (
 
 const (
   clubs string = "♣"
-  diamonds string = "♦"
-  hearts string = "♥"
+  diamonds string = "♢"
+  hearts string = "♡"
   spades string = "♠"
 )
 
 var (
   ranks = []string{"2", "3", "4", "5", "6", "7", "8", "9", "T", "J", "Q", "K", "A"}
-  suites = []string{clubs, diamonds, hearts, spades}
+  suites = []string{"C", "D", "H", "S"}
 
   // r = rand.New(rand.NewSource(99)) // For testing purposes
   r = rand.New(rand.NewSource(time.Now().UnixNano()))
 )
+
+func suiteToString(suite string) string {
+  return map[string]string{
+    "C": clubs,
+    "D": diamonds,
+    "H": hearts,
+    "S": spades,
+  }[suite]
+}
 
 type card struct {
   rank string
@@ -35,7 +44,7 @@ type card struct {
 }
 
 func (c card) toString() string {
-  return fmt.Sprintf("%s%s", c.rank, c.suite)
+  return fmt.Sprintf("%s%s", c.rank, suiteToString(c.suite))
 }
 
 func initializeDeck() []card {
@@ -161,6 +170,7 @@ func detectPrize(h []card) prize {
   for i := 0; i < len(hand) - 1; i++ {
     if hand[i + 1].rank_i != hand[i].rank_i + 1 {
       is_straight = false
+      break
     }
   }
 
