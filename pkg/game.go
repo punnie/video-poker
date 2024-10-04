@@ -29,13 +29,21 @@ func (h Hand) HandCards() []Card {
   return h.hand.cards
 }
 
+func (h Hand) Prize() string {
+  var prizeString string
+
+  prizeString = detectPrize(h.hand.cards).String()
+
+  return prizeString
+}
+
 type prize struct {
 	hand int
 }
 
-func (p prize) toString() string {
+func (p prize) String() string {
 	return [...]string{
-    "NONE", 
+    "", 
     "JACKS OR HIGHER",
     "TWO PAIR",
     "THREE OF A KIND",

@@ -68,9 +68,9 @@ func cardView(c game.Card, visible bool) string {
     label = c.String()
 
     if c.Suite == "C" || c.Suite == "S" {
-      color = lipgloss.Color("23")
+      color = lipgloss.Color("#FFFFFF")
     } else {
-      color = lipgloss.Color("99")
+      color = lipgloss.Color("#FF0000")
     }
 
   } else {
@@ -119,7 +119,7 @@ func payoutTableView() string {
 
   t := table.New().
       Border(lipgloss.NormalBorder()).
-      BorderStyle(lipgloss.NewStyle().Foreground(lipgloss.Color("99"))).
+      BorderStyle(lipgloss.NewStyle().Foreground(lipgloss.Color("#FFCC00"))).
       Rows(rows...).
       StyleFunc(func(row, col int) lipgloss.Style {
         if col == 0 {
@@ -132,6 +132,14 @@ func payoutTableView() string {
   return t.Render()
 }
 
+func prizeView(h game.Hand) string {
+  var view string
+
+  view = h.Prize()
+
+  return view
+}
+
 func (g *gameState) View() string {
   style := lipgloss.NewStyle().
       Bold(true).
@@ -139,11 +147,16 @@ func (g *gameState) View() string {
       PaddingTop(2).
       PaddingBottom(2)
 
-  return lipgloss.JoinVertical(
-    lipgloss.Center, 
-    payoutTableView(), 
-    lipgloss.JoinHorizontal(lipgloss.Center, cardViews(g.hand)...),
-    style.Render(g.message),
+  paddingStyle := lipgloss.NewStyle().Padding(4)
+
+  return paddingStyle.Render(
+    lipgloss.JoinVertical(
+      lipgloss.Center, 
+      payoutTableView(), 
+      prizeView(g.hand),
+      lipgloss.JoinHorizontal(lipgloss.Center, cardViews(g.hand)...),
+      style.Render(g.message),
+    ),
   )
 }
 
