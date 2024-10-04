@@ -50,7 +50,7 @@ func rankToString(rank int) string {
   }[rank]
 }
 
-func (c Card) ToString() string {
+func (c Card) String() string {
   return fmt.Sprintf("%s%s", rankToString(c.Rank), suiteToString(c.Suite))
 }
 

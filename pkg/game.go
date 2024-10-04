@@ -2,7 +2,6 @@ package pkg
 
 import (
 	"cmp"
-	"fmt"
 	"slices"
 )
 
@@ -20,6 +19,14 @@ type Hand struct {
 
 func (h Hand) DeckLength() int {
   return h.deck.Len()
+}
+
+func (h Hand) HandLength() int {
+  return h.hand.Len()
+}
+
+func (h Hand) HandCards() []Card {
+  return h.hand.cards
 }
 
 type prize struct {
@@ -62,11 +69,10 @@ func InitializeHand() Hand {
     card := Card{}
 
     card, deck = deck.RandomPop()
-    hand.Push(card)
+    hand = hand.Push(card)
   }
 
-  fmt.Printf("Deck has %d cards\n", deck.Len())
-
+  // fmt.Printf("Deck has %d cards\n", deck.Len())
 
   return Hand{
     state: 0,
