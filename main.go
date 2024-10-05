@@ -53,45 +53,59 @@ func (g *gameState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
   return g, nil
 }
 
+var (
+  cardBorder = lipgloss.Border{
+    Top: "─",
+    Bottom: "─",
+    Left: "│",
+    Right: "│",
+    TopLeft: "╭",
+    TopRight: "╮",
+    BottomLeft: "╰",
+    BottomRight: "╯",
+  }
+)
+
 func cardView(c game.Card, visible bool) string {
   var view string
   var design string
   var label string
+  var reverse_label string
   var color lipgloss.Color
 
-  const width = 8
-  const height = 6
+  const width = 7
+  const height = 5
 
   // Card background design
   if visible {
     design = " "
     label = c.String()
+    reverse_label = c.ReverseString()
 
     if c.Suite == "C" || c.Suite == "S" {
-      color = lipgloss.Color("#FFFFFF")
+      color = lipgloss.Color("#000000")
     } else {
       color = lipgloss.Color("#FF0000")
     }
 
   } else {
     design = "╱"
-    label = "──"
+    label = "╱"
 
-    color = lipgloss.Color("55")
+    color = lipgloss.Color("#FFFFFF")
   }
 
-  style := lipgloss.NewStyle().Foreground(color)
-  padding := strings.Repeat("─", width - lipgloss.Width(label))
-
-  view = style.Render("╭" + label + padding + "╮") + "\n"
+  style := lipgloss.NewStyle().Foreground(color).Background(lipgloss.Color("#FFFFFF")).Bold(true)
+  view = style.Render(label + strings.Repeat(design, width - lipgloss.Width(label))) + "\n"
 
   for i := 0; i < height - 1; i++ {
-    view += style.Render("│" + strings.Repeat(design, width) + "│") + "\n"
+    view += style.Render(strings.Repeat(design, width)) + "\n"
   }
 
-  view += style.Render("╰" + padding + label + "╯")
+  view += style.Render(strings.Repeat(design, width - lipgloss.Width(reverse_label)) + reverse_label)
 
-  return view
+  borderStyle := lipgloss.NewStyle().Foreground(color).Background(lipgloss.Color("#FFFFFF")).Padding(0, 1).Margin(1)
+  return borderStyle.Render(view)
 }
 
 func cardViews(h game.Hand) []string {
@@ -147,16 +161,12 @@ func (g *gameState) View() string {
       PaddingTop(2).
       PaddingBottom(2)
 
-  paddingStyle := lipgloss.NewStyle().Padding(4)
-
-  return paddingStyle.Render(
-    lipgloss.JoinVertical(
-      lipgloss.Center, 
-      payoutTableView(), 
-      prizeView(g.hand),
-      lipgloss.JoinHorizontal(lipgloss.Center, cardViews(g.hand)...),
-      style.Render(g.message),
-    ),
+  return lipgloss.JoinVertical(
+    lipgloss.Center, 
+    payoutTableView(), 
+    prizeView(g.hand),
+    lipgloss.JoinHorizontal(lipgloss.Center, cardViews(g.hand)...),
+    style.Render(g.message),
   )
 }
 

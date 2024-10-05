@@ -7,8 +7,8 @@ import (
 )
 
 const (
-  clubs string = "♣"
-  diamonds string = "♢"
+  clubs string = "♧"
+  diamonds string = "♦"
   hearts string = "♡"
   spades string = "♠"
 )
@@ -42,7 +42,7 @@ func rankToString(rank int) string {
     5: "7",
     6: "8",
     7: "9",
-    8: "T",
+    8: "10",
     9: "J",
     10: "Q",
     11: "K",
@@ -52,6 +52,10 @@ func rankToString(rank int) string {
 
 func (c Card) String() string {
   return fmt.Sprintf("%s%s", rankToString(c.Rank), suiteToString(c.Suite))
+}
+
+func (c Card) ReverseString() string {
+  return fmt.Sprintf("%s%s", suiteToString(c.Suite), rankToString(c.Rank))
 }
 
 type Stack struct {
