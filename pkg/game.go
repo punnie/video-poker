@@ -183,6 +183,9 @@ func InitializeHand() Hand {
 func InitializeGame() {
 }
 
+func InitializeGame() {
+}
+
 func detectPrize(h []Card) prize {
 	ranks := map[int]int{}
 	suites := map[string]int{}
