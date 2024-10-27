@@ -10,26 +10,30 @@ var (
 	suites = []string{"C", "D", "H", "S"}
 )
 
-type Hand struct {
+type Game struct {
   hand Stack
   deck Stack
+
+  bet int
+
+  credits int
 
   state int
 }
 
-func (h Hand) DeckLength() int {
+func (h Game) DeckLength() int {
   return h.deck.Len()
 }
 
-func (h Hand) HandLength() int {
+func (h Game) HandLength() int {
   return h.hand.Len()
 }
 
-func (h Hand) HandCards() []Card {
+func (h Game) HandCards() []Card {
   return h.hand.cards
 }
 
-func (h Hand) Prize() string {
+func (h Game) Prize() string {
   var prizeString string
 
   prizeString = detectPrize(h.hand.cards).String()
@@ -68,7 +72,7 @@ func initializeDeck() Stack {
 	return deck
 }
 
-func InitializeHand() Hand {
+func InitializeHand() Game {
   var hand Stack
 
   deck := initializeDeck()
@@ -82,12 +86,13 @@ func InitializeHand() Hand {
 
   // fmt.Printf("Deck has %d cards\n", deck.Len())
 
-  return Hand{
-    state: 0,
-
+  return Game{
     hand: hand,
     deck: deck,
   }
+}
+
+func InitializeGame() {
 }
 
 func detectPrize(h []Card) prize {
@@ -103,8 +108,7 @@ func detectPrize(h []Card) prize {
 
 	slices.SortFunc(hand, cardCmp)
 
-	// fmt.Println("Sorted hand: ", hand)
-
+  // Count ranks and suites in hand
 	for _, card := range hand {
 		_, rank_is_present := ranks[card.Rank]
 		if rank_is_present {
@@ -120,11 +124,6 @@ func detectPrize(h []Card) prize {
 			suites[card.Suite] = 1
 		}
 	}
-
-	// fmt.Println("Ranks: ", ranks)
-	// fmt.Println("Ranks length: ", len(ranks))
-	// fmt.Println("Suites: ", suites)
-	// fmt.Println("Suites length: ", len(suites))
 
 	is_straight := true
 
