@@ -20,4 +20,3 @@ package main
 //     t.Errorf("Expected 51 cards in the deck, got %d", len(deck))
 //   }
 // }
-

@@ -10,6 +10,7 @@ var (
 	suites = []string{"C", "D", "H", "S"}
 )
 
+<<<<<<< HEAD
 type Game struct {
   hand Stack
   deck Stack
@@ -35,10 +36,33 @@ func (h Game) HandCards() []Card {
 
 func (h Game) Prize() string {
   var prizeString string
+=======
+type Hand struct {
+	hand Stack
+	deck Stack
 
-  prizeString = detectPrize(h.hand.cards).String()
+	state int
+}
 
-  return prizeString
+func (h Hand) DeckLength() int {
+	return h.deck.Len()
+}
+
+func (h Hand) HandLength() int {
+	return h.hand.Len()
+}
+
+func (h Hand) HandCards() []Card {
+	return h.hand.cards
+}
+
+func (h Hand) Prize() string {
+	var prizeString string
+>>>>>>> 397fb91 (Refactor code formatting and update project description)
+
+	prizeString = detectPrize(h.hand.cards).String()
+
+	return prizeString
 }
 
 type prize struct {
@@ -47,17 +71,17 @@ type prize struct {
 
 func (p prize) String() string {
 	return [...]string{
-    "", 
-    "JACKS OR HIGHER",
-    "TWO PAIR",
-    "THREE OF A KIND",
-    "STRAIGHT",
-    "FLUSH",
-    "FULL HOUSE",
-    "FOUR OF A KIND",
-    "STRAIGHT FLUSH",
-    "ROYAL FLUSH",
-  }[p.hand]
+		"",
+		"JACKS OR HIGHER",
+		"TWO PAIR",
+		"THREE OF A KIND",
+		"STRAIGHT",
+		"FLUSH",
+		"FULL HOUSE",
+		"FOUR OF A KIND",
+		"STRAIGHT FLUSH",
+		"ROYAL FLUSH",
+	}[p.hand]
 }
 
 func initializeDeck() Stack {
@@ -65,31 +89,45 @@ func initializeDeck() Stack {
 
 	for _, suite := range suites {
 		for i := range ranks {
-      deck = deck.Push(Card{Rank: i, Suite: suite})
+			deck = deck.Push(Card{Rank: i, Suite: suite})
 		}
 	}
 
 	return deck
 }
 
+<<<<<<< HEAD
 func InitializeHand() Game {
   var hand Stack
+=======
+func InitializeHand() Hand {
+	var hand Stack
+>>>>>>> 397fb91 (Refactor code formatting and update project description)
 
-  deck := initializeDeck()
+	deck := initializeDeck()
 
-  for i := 0; i < 5; i++ {
-    card := Card{}
+	for i := 0; i < 5; i++ {
+		card := Card{}
 
-    card, deck = deck.RandomPop()
-    hand = hand.Push(card)
-  }
+		card, deck = deck.RandomPop()
+		hand = hand.Push(card)
+	}
 
-  // fmt.Printf("Deck has %d cards\n", deck.Len())
+	// fmt.Printf("Deck has %d cards\n", deck.Len())
 
+<<<<<<< HEAD
   return Game{
     hand: hand,
     deck: deck,
   }
+=======
+	return Hand{
+		state: 0,
+
+		hand: hand,
+		deck: deck,
+	}
+>>>>>>> 397fb91 (Refactor code formatting and update project description)
 }
 
 func InitializeGame() {
@@ -129,7 +167,7 @@ func detectPrize(h []Card) prize {
 
 	// Check for straight
 	for i := 0; i < len(hand)-1; i++ {
-		if hand[i + 1].Rank != hand[i].Rank + 1 {
+		if hand[i+1].Rank != hand[i].Rank+1 {
 			is_straight = false
 			break
 		}
@@ -139,7 +177,7 @@ func detectPrize(h []Card) prize {
 	if len(suites) == 1 {
 		if is_straight {
 			// Royal straight flush
-			if hand[len(hand) - 1].Rank == 12 {
+			if hand[len(hand)-1].Rank == 12 {
 				return prize{hand: 9}
 			}
 

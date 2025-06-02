@@ -1,9 +1,9 @@
 {
-  description = "A simple Go project";
+  description = "TUI video poker";
 
   # Inputs include the Nix packages and any other dependencies.
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
@@ -34,4 +34,3 @@
       }
     );
 }
-
