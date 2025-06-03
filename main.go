@@ -17,14 +17,16 @@ type gameState struct {
 	message string
 	credits int
 	bet     int
+	gamePhase int // 0: initial deal, 1: hold/draw phase, 2: final result
 }
 
 func initializeModel() *gameState {
 	return &gameState{
 		bet:     1,
 		credits: 100,
+		gamePhase: -1,
 
-		message: "Hello world!",
+		message: "Welcome to Video Poker! Press 'n' to start a new game",
 
 		hand: game.InitializeHand(),
 	}
@@ -41,11 +43,47 @@ func (g *gameState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "q", "ctrl+c", "esc":
 			return g, tea.Quit
-		case "d":
-			g.hand = game.InitializeHand()
+		case "n": // New game
+			if g.credits >= g.bet {
+				g.credits -= g.bet
+				g.hand = game.InitializeHand()
+				g.gamePhase = 0
+				g.message = "Select cards to hold (1-5) then press SPACE to draw"
+			} else {
+				g.message = "Not enough credits!"
+			}
 			return g, nil
-		case "e":
-			g.message = fmt.Sprintf("Your hand has %d cards!", g.hand.HandLength())
+		case "1", "2", "3", "4", "5":
+			if g.gamePhase == 0 {
+				cardIndex := int(msg.String()[0] - '1')
+				g.hand = g.hand.ToggleHold(cardIndex)
+				g.message = "Select cards to hold (1-5) then press SPACE to draw"
+			}
+			return g, nil
+		case " ": // Space to draw
+			if g.gamePhase == 0 {
+				g.hand = g.hand.Draw()
+				g.gamePhase = 1
+				prizeValue := g.hand.GetPrizeValue(g.bet)
+				g.credits += prizeValue
+				if prizeValue > 0 {
+					g.message = fmt.Sprintf("You won %d credits! Press 'n' for new game", prizeValue)
+				} else {
+					g.message = "No win. Press 'n' for new game"
+				}
+			}
+			return g, nil
+		case "+":
+			if g.bet < 5 {
+				g.bet++
+				g.message = fmt.Sprintf("Bet: %d credits", g.bet)
+			}
+			return g, nil
+		case "-":
+			if g.bet > 1 {
+				g.bet--
+				g.message = fmt.Sprintf("Bet: %d credits", g.bet)
+			}
 			return g, nil
 		}
 	}
@@ -108,11 +146,26 @@ func cardView(c game.Card, visible bool) string {
 	return borderStyle.Render(view)
 }
 
-func cardViews(h game.Hand) []string {
+func cardViews(h game.Hand, gamePhase int) []string {
 	var views []string
 
-	for _, card := range h.HandCards() {
-		views = append(views, cardView(card, true))
+	for i, card := range h.HandCards() {
+		cardStr := cardView(card, true)
+		
+		// Add hold indicator and button number
+		holdIndicator := ""
+		if gamePhase == 0 {
+			if h.IsHeld(i) {
+				holdIndicator = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#00FF00")).Render("[HELD]")
+			} else {
+				holdIndicator = lipgloss.NewStyle().Foreground(lipgloss.Color("#888888")).Render("[    ]")
+			}
+		}
+		
+		buttonNumber := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#FFCC00")).Render(fmt.Sprintf("  %d  ", i+1))
+		
+		cardWithButton := lipgloss.JoinVertical(lipgloss.Center, cardStr, holdIndicator, buttonNumber)
+		views = append(views, cardWithButton)
 	}
 
 	return views
@@ -161,11 +214,16 @@ func (g *gameState) View() string {
 		PaddingTop(2).
 		PaddingBottom(2)
 
+	// Credit and bet information
+	creditInfo := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#00FF00")).Render(
+		fmt.Sprintf("Credits: %d | Bet: %d | Press +/- to change bet, 'n' for new game", g.credits, g.bet))
+
 	return lipgloss.JoinVertical(
 		lipgloss.Center,
 		payoutTableView(),
+		creditInfo,
 		prizeView(g.hand),
-		lipgloss.JoinHorizontal(lipgloss.Center, cardViews(g.hand)...),
+		lipgloss.JoinHorizontal(lipgloss.Center, cardViews(g.hand, g.gamePhase)...),
 		style.Render(g.message),
 	)
 }

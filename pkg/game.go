@@ -40,6 +40,7 @@ func (h Game) Prize() string {
 type Hand struct {
 	hand Stack
 	deck Stack
+	held [5]bool
 
 	state int
 }
@@ -63,6 +64,55 @@ func (h Hand) Prize() string {
 	prizeString = detectPrize(h.hand.cards).String()
 
 	return prizeString
+}
+
+func (h Hand) IsHeld(index int) bool {
+	if index < 0 || index >= 5 {
+		return false
+	}
+	return h.held[index]
+}
+
+func (h Hand) ToggleHold(index int) Hand {
+	if index < 0 || index >= 5 {
+		return h
+	}
+	h.held[index] = !h.held[index]
+	return h
+}
+
+func (h Hand) Draw() Hand {
+	for i := 0; i < 5; i++ {
+		if !h.held[i] {
+			card, deck := h.deck.RandomPop()
+			h.hand.cards[i] = card
+			h.deck = deck
+		}
+	}
+	h.state = 1
+	return h
+}
+
+func (h Hand) GetPrizeValue(bet int) int {
+	prize := detectPrize(h.hand.cards)
+	multipliers := map[int][]int{
+		1: {1, 2, 3, 4, 5},     // JACKS OR HIGHER
+		2: {1, 2, 3, 4, 5},     // TWO PAIR
+		3: {2, 4, 6, 8, 10},    // THREE OF A KIND
+		4: {3, 6, 9, 12, 15},   // STRAIGHT
+		5: {5, 10, 15, 20, 25}, // FLUSH
+		6: {7, 14, 21, 28, 35}, // FULL HOUSE
+		7: {20, 40, 60, 80, 100}, // FOUR OF A KIND
+		8: {50, 100, 150, 200, 250}, // STRAIGHT FLUSH
+		9: {250, 500, 750, 1000, 4000}, // ROYAL FLUSH
+	}
+	
+	if multiplier, exists := multipliers[prize.hand]; exists {
+		if bet > 0 && bet <= 5 {
+			return multiplier[bet-1]
+		}
+	}
+	return 0
 }
 
 type prize struct {
