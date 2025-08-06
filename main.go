@@ -26,7 +26,7 @@ func initializeModel() *gameState {
 		credits: 100,
 		gamePhase: -1,
 
-		message: "Welcome to Video Poker! Press 'n' to start a new game",
+		message: "Welcome to Video Poker! Press SPACE to start a new game",
 
 		hand: game.InitializeHand(),
 	}
@@ -43,16 +43,6 @@ func (g *gameState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "q", "ctrl+c", "esc":
 			return g, tea.Quit
-		case "n": // New game
-			if g.credits >= g.bet {
-				g.credits -= g.bet
-				g.hand = game.InitializeHand()
-				g.gamePhase = 0
-				g.message = "Select cards to hold (1-5) then press SPACE to draw"
-			} else {
-				g.message = "Not enough credits!"
-			}
-			return g, nil
 		case "1", "2", "3", "4", "5":
 			if g.gamePhase == 0 {
 				cardIndex := int(msg.String()[0] - '1')
@@ -60,16 +50,27 @@ func (g *gameState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				g.message = "Select cards to hold (1-5) then press SPACE to draw"
 			}
 			return g, nil
-		case " ": // Space to draw
-			if g.gamePhase == 0 {
+		case " ": // Space - multi-purpose based on game state
+			if g.gamePhase == -1 || g.gamePhase == 1 {
+				// Start a new game if we're at the initial state or after a hand is complete
+				if g.credits >= g.bet {
+					g.credits -= g.bet
+					g.hand = game.InitializeHand()
+					g.gamePhase = 0
+					g.message = "Select cards to hold (1-5) then press SPACE to draw"
+				} else {
+					g.message = "Not enough credits!"
+				}
+			} else if g.gamePhase == 0 {
+				// Draw cards if we're in the hold/draw phase
 				g.hand = g.hand.Draw()
 				g.gamePhase = 1
 				prizeValue := g.hand.GetPrizeValue(g.bet)
 				g.credits += prizeValue
 				if prizeValue > 0 {
-					g.message = fmt.Sprintf("You won %d credits! Press 'n' for new game", prizeValue)
+					g.message = fmt.Sprintf("You won %d credits! Press SPACE for new game", prizeValue)
 				} else {
-					g.message = "No win. Press 'n' for new game"
+					g.message = "No win. Press SPACE for new game"
 				}
 			}
 			return g, nil
@@ -102,6 +103,16 @@ var (
 		BottomLeft:  "╰",
 		BottomRight: "╯",
 	}
+
+	// Improved color palette
+	creditColor    = lipgloss.Color("#22C55E")  // Softer green
+	betColor       = lipgloss.Color("#3B82F6")  // Blue
+	holdColor      = lipgloss.Color("#10B981")  // Emerald
+	buttonColor    = lipgloss.Color("#6366F1")  // Indigo
+	borderColor    = lipgloss.Color("#64748B")  // Slate
+	redSuitColor   = lipgloss.Color("#DC2626")  // Softer red
+	blackSuitColor = lipgloss.Color("#1F2937")  // Dark gray
+	messageColor   = lipgloss.Color("#374151")  // Gray
 )
 
 func cardView(c game.Card, visible bool) string {
@@ -121,9 +132,9 @@ func cardView(c game.Card, visible bool) string {
 		reverse_label = c.ReverseString()
 
 		if c.Suite == "C" || c.Suite == "S" {
-			color = lipgloss.Color("#000000")
+			color = blackSuitColor
 		} else {
-			color = lipgloss.Color("#FF0000")
+			color = redSuitColor
 		}
 
 	} else {
@@ -156,13 +167,13 @@ func cardViews(h game.Hand, gamePhase int) []string {
 		holdIndicator := ""
 		if gamePhase == 0 {
 			if h.IsHeld(i) {
-				holdIndicator = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#00FF00")).Render("[HELD]")
+				holdIndicator = lipgloss.NewStyle().Bold(true).Foreground(holdColor).Render("[HELD]")
 			} else {
-				holdIndicator = lipgloss.NewStyle().Foreground(lipgloss.Color("#888888")).Render("[    ]")
+				holdIndicator = lipgloss.NewStyle().Foreground(lipgloss.Color("#9CA3AF")).Render("[    ]")
 			}
 		}
 		
-		buttonNumber := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#FFCC00")).Render(fmt.Sprintf("  %d  ", i+1))
+		buttonNumber := lipgloss.NewStyle().Bold(true).Foreground(buttonColor).Render(fmt.Sprintf("  %d  ", i+1))
 		
 		cardWithButton := lipgloss.JoinVertical(lipgloss.Center, cardStr, holdIndicator, buttonNumber)
 		views = append(views, cardWithButton)
@@ -186,7 +197,7 @@ func payoutTableView() string {
 
 	t := table.New().
 		Border(lipgloss.NormalBorder()).
-		BorderStyle(lipgloss.NewStyle().Foreground(lipgloss.Color("#FFCC00"))).
+		BorderStyle(lipgloss.NewStyle().Foreground(borderColor)).
 		Rows(rows...).
 		StyleFunc(func(row, col int) lipgloss.Style {
 			if col == 0 {
@@ -200,23 +211,34 @@ func payoutTableView() string {
 }
 
 func prizeView(h game.Hand) string {
-	var view string
-
-	view = h.Prize()
-
-	return view
+	prize := h.Prize()
+	if prize == "" {
+		return ""
+	}
+	
+	// Style the prize with a nice color
+	prizeStyle := lipgloss.NewStyle().
+		Bold(true).
+		Foreground(holdColor).
+		Padding(0, 1)
+	
+	return prizeStyle.Render(prize)
 }
 
 func (g *gameState) View() string {
-	style := lipgloss.NewStyle().
+	// Reduced padding for better spacing
+	messageStyle := lipgloss.NewStyle().
 		Bold(true).
-		Blink(true).
-		PaddingTop(2).
-		PaddingBottom(2)
+		Foreground(messageColor).
+		PaddingTop(1).
+		PaddingBottom(1)
 
-	// Credit and bet information
-	creditInfo := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#00FF00")).Render(
-		fmt.Sprintf("Credits: %d | Bet: %d | Press +/- to change bet, 'n' for new game", g.credits, g.bet))
+	// Credit and bet information with improved styling
+	creditInfo := lipgloss.NewStyle().Bold(true).Render(
+		lipgloss.NewStyle().Foreground(creditColor).Render(fmt.Sprintf("Credits: %d", g.credits)) +
+		" | " +
+		lipgloss.NewStyle().Foreground(betColor).Render(fmt.Sprintf("Bet: %d", g.bet)) +
+		" | Press +/- to change bet, SPACE for new game")
 
 	return lipgloss.JoinVertical(
 		lipgloss.Center,
@@ -224,7 +246,7 @@ func (g *gameState) View() string {
 		creditInfo,
 		prizeView(g.hand),
 		lipgloss.JoinHorizontal(lipgloss.Center, cardViews(g.hand, g.gamePhase)...),
-		style.Render(g.message),
+		messageStyle.Render(g.message),
 	)
 }
 
