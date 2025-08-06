@@ -11,29 +11,28 @@ var (
 )
 
 type Hand struct {
-	hand Stack
-	deck Stack
-	held [5]bool
-
-	state int
+	Hand  Stack
+	Deck  Stack
+	Held  [5]bool
+	State int
 }
 
 func (h Hand) DeckLength() int {
-	return h.deck.Len()
+	return h.Deck.Len()
 }
 
 func (h Hand) HandLength() int {
-	return h.hand.Len()
+	return h.Hand.Len()
 }
 
 func (h Hand) HandCards() []Card {
-	return h.hand.cards
+	return h.Hand.Cards
 }
 
 func (h Hand) Prize() string {
 	var prizeString string
 
-	prizeString = detectPrize(h.hand.cards).String()
+	prizeString = detectPrize(h.Hand.Cards).String()
 
 	return prizeString
 }
@@ -42,31 +41,31 @@ func (h Hand) IsHeld(index int) bool {
 	if index < 0 || index >= 5 {
 		return false
 	}
-	return h.held[index]
+	return h.Held[index]
 }
 
 func (h Hand) ToggleHold(index int) Hand {
 	if index < 0 || index >= 5 {
 		return h
 	}
-	h.held[index] = !h.held[index]
+	h.Held[index] = !h.Held[index]
 	return h
 }
 
 func (h Hand) Draw() Hand {
 	for i := 0; i < 5; i++ {
-		if !h.held[i] {
-			card, deck := h.deck.RandomPop()
-			h.hand.cards[i] = card
-			h.deck = deck
+		if !h.Held[i] {
+			card, deck := h.Deck.RandomPop()
+			h.Hand.Cards[i] = card
+			h.Deck = deck
 		}
 	}
-	h.state = 1
+	h.State = 1
 	return h
 }
 
 func (h Hand) GetPrizeValue(bet int) int {
-	prize := detectPrize(h.hand.cards)
+	prize := detectPrize(h.Hand.Cards)
 	multipliers := map[int][]int{
 		1: {1, 2, 3, 4, 5},     // JACKS OR HIGHER
 		2: {1, 2, 3, 4, 5},     // TWO PAIR
@@ -131,10 +130,10 @@ func InitializeHand() Hand {
 	}
 
 	return Hand{
-		state: 0,
+		State: 0,
 
-		hand: hand,
-		deck: deck,
+		Hand: hand,
+		Deck: deck,
 	}
 }
 
