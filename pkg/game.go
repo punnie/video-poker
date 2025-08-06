@@ -10,33 +10,6 @@ var (
 	suites = []string{"C", "D", "H", "S"}
 )
 
-<<<<<<< HEAD
-type Game struct {
-  hand Stack
-  deck Stack
-
-  bet int
-
-  credits int
-
-  state int
-}
-
-func (h Game) DeckLength() int {
-  return h.deck.Len()
-}
-
-func (h Game) HandLength() int {
-  return h.hand.Len()
-}
-
-func (h Game) HandCards() []Card {
-  return h.hand.cards
-}
-
-func (h Game) Prize() string {
-  var prizeString string
-=======
 type Hand struct {
 	hand Stack
 	deck Stack
@@ -59,7 +32,6 @@ func (h Hand) HandCards() []Card {
 
 func (h Hand) Prize() string {
 	var prizeString string
->>>>>>> 397fb91 (Refactor code formatting and update project description)
 
 	prizeString = detectPrize(h.hand.cards).String()
 
@@ -146,13 +118,8 @@ func initializeDeck() Stack {
 	return deck
 }
 
-<<<<<<< HEAD
-func InitializeHand() Game {
-  var hand Stack
-=======
 func InitializeHand() Hand {
 	var hand Stack
->>>>>>> 397fb91 (Refactor code formatting and update project description)
 
 	deck := initializeDeck()
 
@@ -163,27 +130,12 @@ func InitializeHand() Hand {
 		hand = hand.Push(card)
 	}
 
-	// fmt.Printf("Deck has %d cards\n", deck.Len())
-
-<<<<<<< HEAD
-  return Game{
-    hand: hand,
-    deck: deck,
-  }
-=======
 	return Hand{
 		state: 0,
 
 		hand: hand,
 		deck: deck,
 	}
->>>>>>> 397fb91 (Refactor code formatting and update project description)
-}
-
-func InitializeGame() {
-}
-
-func InitializeGame() {
 }
 
 func detectPrize(h []Card) prize {
@@ -199,7 +151,7 @@ func detectPrize(h []Card) prize {
 
 	slices.SortFunc(hand, cardCmp)
 
-  // Count ranks and suites in hand
+	// Count ranks and suites in hand
 	for _, card := range hand {
 		_, rank_is_present := ranks[card.Rank]
 		if rank_is_present {
