@@ -59,22 +59,22 @@ func (c Card) ReverseString() string {
 }
 
 type Stack struct {
-	cards []Card
+	Cards []Card
 }
 
 func (s Stack) Len() int {
-	return len(s.cards)
+	return len(s.Cards)
 }
 
 func (s Stack) Push(c Card) Stack {
-	s.cards = append(s.cards, c)
+	s.Cards = append(s.Cards, c)
 
 	return s
 }
 
 func (s Stack) PopAndRemove(index int) (Card, Stack) {
-	c := s.cards[index]
-	s.cards = append(s.cards[:index], s.cards[index+1:]...)
+	c := s.Cards[index]
+	s.Cards = append(s.Cards[:index], s.Cards[index+1:]...)
 
 	return c, s
 }

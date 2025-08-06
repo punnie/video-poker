@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"strings"
@@ -12,7 +13,7 @@ import (
 )
 
 type gameState struct {
-	hand game.Hand
+	Hand game.Hand
 
 	message string
 	credits int
@@ -28,7 +29,7 @@ func initializeModel() *gameState {
 
 		message: "Welcome to Video Poker! Press SPACE to start a new game",
 
-		hand: game.InitializeHand(),
+		Hand: game.InitializeHand(),
 	}
 }
 
@@ -46,7 +47,7 @@ func (g *gameState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "1", "2", "3", "4", "5":
 			if g.gamePhase == 0 {
 				cardIndex := int(msg.String()[0] - '1')
-				g.hand = g.hand.ToggleHold(cardIndex)
+				g.Hand = g.Hand.ToggleHold(cardIndex)
 				g.message = "Select cards to hold (1-5) then press SPACE to draw"
 			}
 			return g, nil
@@ -55,7 +56,7 @@ func (g *gameState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				// Start a new game if we're at the initial state or after a hand is complete
 				if g.credits >= g.bet {
 					g.credits -= g.bet
-					g.hand = game.InitializeHand()
+					g.Hand = game.InitializeHand()
 					g.gamePhase = 0
 					g.message = "Select cards to hold (1-5) then press SPACE to draw"
 				} else {
@@ -63,9 +64,9 @@ func (g *gameState) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			} else if g.gamePhase == 0 {
 				// Draw cards if we're in the hold/draw phase
-				g.hand = g.hand.Draw()
+				g.Hand = g.Hand.Draw()
 				g.gamePhase = 1
-				prizeValue := g.hand.GetPrizeValue(g.bet)
+				prizeValue := g.Hand.GetPrizeValue(g.bet)
 				g.credits += prizeValue
 				if prizeValue > 0 {
 					g.message = fmt.Sprintf("You won %d credits! Press SPACE for new game", prizeValue)
@@ -244,17 +245,25 @@ func (g *gameState) View() string {
 		lipgloss.Center,
 		payoutTableView(),
 		creditInfo,
-		prizeView(g.hand),
-		lipgloss.JoinHorizontal(lipgloss.Center, cardViews(g.hand, g.gamePhase)...),
+		prizeView(g.Hand),
+		lipgloss.JoinHorizontal(lipgloss.Center, cardViews(g.Hand, g.gamePhase)...),
 		messageStyle.Render(g.message),
 	)
 }
 
 func main() {
-	p := tea.NewProgram(initializeModel())
+	api := flag.Bool("api", false, "run the api server")
+	flag.Parse()
 
-	if _, err := p.Run(); err != nil {
-		fmt.Println("Argh! Error found!")
-		os.Exit(1)
+	if *api {
+		InitDB()
+		StartAPIServer()
+	} else {
+		p := tea.NewProgram(initializeModel())
+
+		if _, err := p.Run(); err != nil {
+			fmt.Println("Argh! Error found!")
+			os.Exit(1)
+		}
 	}
 }
